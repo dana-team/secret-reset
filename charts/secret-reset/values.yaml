@@ -1,0 +1,66 @@
+# Default values for reset-secret.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  # -- The repository of the container image.
+  repository: ghcr.io/dana-team/reset-secret
+  # -- The tag of the container image.
+  tag: ""
+  # -- The pull policy for the image.
+  pullPolicy: IfNotPresent
+
+# Override the name of the deployment
+nameOverride: ""
+
+# Override the full name of the deployment
+fullnameOverride: ""
+
+# -- Node selector for scheduling pods. Allows you to specify node labels for pod assignment.
+nodeSelector: {}
+
+# -- Node tolerations for scheduling pods. Allows the pods to be scheduled on nodes with matching taints.
+tolerations: []
+
+# -- Node affinity rules for scheduling pods. Allows you to specify advanced node selection constraints.
+affinity: {}
+
+# -- Resource requests and limits for the container.
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+# -- Pod-level security context for the entire pod.
+securityContext: {}
+
+config:
+  cron:
+    # -- Whether the Crob is active or not.
+    suspend: false
+    # -- The schedule of the CronJob.
+    schedule: "0 * * * *"
+    # -- Specifies how to treat concurrent executions of a Job.
+    concurrencyPolicy: Replace
+    # -- Specifies the duration in seconds relative to the startTime that the job may be continuously active before the system tries to terminate
+    activeDeadlineSeconds: 120
+    # -- Restart policy for all containers within the pod.
+    restartPolicy: OnFailure
+    # -- The number of failed finished jobs to retain. Value must be non-negative integer.
+    failedJobsHistoryLimit: 3
+    # -- The number of successful finished jobs to retain. Value must be non-negative integer.
+    successfulJobsHistoryLimit: 3
+  env:
+    # -- The auth username.
+    AUTH_USERNAME: dana
+    # -- The auth client secret.
+    AUTH_CLIENT_SECRET: secretive
+    # -- The auth service URL.
+    AUTH_URL: https://127.0.0.1:8080
+    # -- The name of the secret to create or update.
+    SECRET_NAME: top-secret
+    # -- The namespace of the secret to create or update.
+    SECRET_NAMESPACE: top-secret-ns

@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "secret-reset.fullname" . }}
+  labels:
+    {{- include "secret-reset.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.config.cron.schedule }}
+  concurrencyPolicy: {{ .Values.config.cron.concurrencyPolicy }}
+  suspend: {{ .Values.config.cron.suspend }}
+  failedJobsHistoryLimit: {{ .Values.config.cron.failedJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ .Values.config.cron.successfulJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: {{ .Values.config.cron.activeDeadlineSeconds }}
+      template:
+        spec:
+          serviceAccountName: {{ include "secret-reset.fullname" . }}-sa
+          restartPolicy: {{ .Values.config.cron.restartPolicy }}
+          containers:
+            - name: {{ .Chart.Name }}
+              securityContext:
+                {{- toYaml .Values.securityContext | nindent 16 }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              env:
+                {{- range $key, $value := .Values.config.env }}
+                - name: {{ $key }}
+                  value: {{ $value }}
+                {{- end }}
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
