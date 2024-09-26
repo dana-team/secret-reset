@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+
 	"github.com/dana-team/secretreset/internal/clients"
 	"github.com/dana-team/secretreset/internal/token"
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
 	"go.uber.org/zap"
-	"net/http"
-	"os"
 )
 
 const (

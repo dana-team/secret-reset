@@ -5,10 +5,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/dana-team/secretreset/internal/util"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/dana-team/secretreset/internal/util"
 
 	"github.com/dana-team/secretreset/internal/clients"
 	"github.com/go-logr/logr"
@@ -138,7 +139,7 @@ func (t *Manager) CreateOrUpdate() error {
 
 	response, err := clients.SendRequest(authParams[authUrl], authHeader, t.Logger, t.HTTPClient)
 	if err != nil {
-		return fmt.Errorf(errSendingHTTPRequest)
+		return fmt.Errorf("%s: %w", errSendingHTTPRequest, err)
 	}
 
 	accessToken, err := t.extractAccessToken(response)
