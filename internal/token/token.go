@@ -23,7 +23,7 @@ import (
 
 const (
 	errParsing            = "Failed to parse JSON"
-	errNotSet             = "Error: Please set "
+	errNotSet             = "Error: Please set"
 	errUpdating           = "Failed to update resource"
 	errCreating           = "Failed to create a new resource"
 	errCreatingSecret     = "Failed to create a new resource"
@@ -61,7 +61,7 @@ func (t *Manager) extractAccessToken(body []byte) (string, error) {
 
 // updateSecret updates an existing secret with the given access token.
 func (t *Manager) updateSecret(accessToken string, secret *corev1.Secret, secretName string, secretNamespace string) error {
-	t.Logger.Info("Secret %q exists in namespace %q", secretName, secretNamespace)
+	t.Logger.Info(fmt.Sprintf("Secret %q exists in namespace %q", secretName, secretNamespace))
 
 	encodedToken := base64.StdEncoding.EncodeToString([]byte(accessToken))
 
@@ -75,7 +75,7 @@ func (t *Manager) updateSecret(accessToken string, secret *corev1.Secret, secret
 		return fmt.Errorf("%s: %w", errUpdatingSecret, err)
 	}
 
-	t.Logger.Info("Secret %q exists in namespace %q, updating...", secretName, secretNamespace)
+	t.Logger.Info(fmt.Sprintf("Secret %q exists in namespace %q, updating...", secretName, secretNamespace))
 	return nil
 }
 
@@ -96,14 +96,14 @@ func prepareSecret(secretName string, secretNamespace string, accessToken string
 
 // createSecret creates a new secret that stores the given access token.
 func (t *Manager) createSecret(secretName string, secretNamespace string, accessToken string) error {
-	t.Logger.Info("Secret %q does not exist in namespace %q. Creating...", secretName, secretNamespace)
+	t.Logger.Info(fmt.Sprintf("Secret %q does not exist in namespace %q. Creating...", secretName, secretNamespace))
 	newSecret := prepareSecret(secretName, secretNamespace, accessToken)
 
 	if err := clients.CreateResource(t.K8sClient, newSecret); err != nil {
 		return fmt.Errorf("%s: %w", errCreatingSecret, err)
 	}
 
-	t.Logger.Info("Secret %q created successfully in namespace %q", secretName, secretNamespace)
+	t.Logger.Info(fmt.Sprintf("Secret %q created successfully in namespace %q", secretName, secretNamespace))
 	return nil
 }
 
