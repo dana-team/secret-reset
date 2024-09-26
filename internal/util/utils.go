@@ -12,7 +12,7 @@ func CheckRequiredVariables(requiredVariables []string) []string {
 	missingVariables := []string{}
 	for _, variable := range requiredVariables {
 		if value, exists := os.LookupEnv(variable); !exists || value == "" {
-			missingVariables = append(missingVariables, value)
+			missingVariables = append(missingVariables, variable)
 		}
 	}
 	return missingVariables
