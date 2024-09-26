@@ -10,9 +10,9 @@ import (
 // that are not set.
 func CheckRequiredVariables(requiredVariables []string) []string {
 	missingVariables := []string{}
-	for _, varibale := range requiredVariables {
-		if value, exists := os.LookupEnv(varibale); !exists || value == "" {
-			missingVariables = append(missingVariables, value)
+	for _, variable := range requiredVariables {
+		if value, exists := os.LookupEnv(variable); !exists || value == "" {
+			missingVariables = append(missingVariables, variable)
 		}
 	}
 	return missingVariables

@@ -2,14 +2,15 @@ package clients
 
 import (
 	"fmt"
-	"github.com/go-logr/logr"
 	"io"
 	"net/http"
+
+	"github.com/go-logr/logr"
 )
 
 const (
 	httpBasicAuthKey     = "Basic"
-	errCreatingRequest   = "Failed creating %q request"
+	errCreatingRequest   = "Failed creating request of method"
 	httpAuthorizationKey = "Authorization"
 	errDoingRequest      = "Failed making the request"
 	errClosingBody       = "Failed to close body"
@@ -23,7 +24,7 @@ func SendRequest(url string, authHeader string, logger logr.Logger, httpClient *
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		logger.Error(err, "%s", errCreatingRequest, http.MethodPost, err)
-		return nil, fmt.Errorf("%s: %w", errCreatingRequest, http.MethodPost, err)
+		return nil, fmt.Errorf("%s %q: %w", errCreatingRequest, http.MethodPost, err)
 	}
 	req.Header.Set(httpAuthorizationKey, httpBasicAuthPrefix)
 
