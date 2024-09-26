@@ -1,5 +1,10 @@
 # Image URL to use all building/pushing image targets
-IMG ?= secret-reset:latest
+IMG ?= secret-reset:$(IMG_TAG)
+IMG_REPO ?= ghcr.io/dana-team/$(NAME)
+IMG_TAG ?= main
+IMG_PULL_POLICY ?= Always
+NAME ?= secret-reset
+NAMESPACE ?= secret-reset-system
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -35,7 +40,6 @@ all: build
 # More info on the awk command:
 # http://linuxcommand.org/lc3_adv_awk.php
 
-
 ##@ Development
 
 .PHONY: fmt
@@ -50,6 +54,22 @@ vet: ## Run go vet against code.
 test:  ## Run tests.
 	go test $$(go list ./... | grep -v /e2e) -coverprofile cover.out
 
+.PHONY: deploy
+deploy: helm ## Deploy to the K8s cluster specified in ~/.kube/config.
+	$(HELM) upgrade $(NAME) -n $(NAMESPACE) charts/$(NAME) --install --create-namespace \
+		-f charts/$(NAME)/values.yaml \
+		--set image.repository=$(IMG_REPO) \
+		--set image.tag=$(IMG_TAG) \
+		--set image.pullPolicy=$(IMG_PULL_POLICY) \
+		--set config.env.AUTH_USERNAME=$(AUTH_USERNAME) \
+		--set config.env.AUTH_CLIENT_SECRET=$(AUTH_CLIENT_SECRET) \
+		--set config.env.AUTH_URL=$(AUTH_URL) \
+		--set config.env.SECRET_NAME=$(SECRET_NAME) \
+		--set config.env.SECRET_NAMESPACE=$(NAMESPACE)
+
+.PHONY: undeploy
+undeploy: helm ## Deploy to the K8s cluster specified in ~/.kube/config.
+	$(HELM) uninstall $(NAME) -n $(NAMESPACE)
 
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter & yamllint
@@ -58,6 +78,10 @@ lint: golangci-lint ## Run golangci-lint linter & yamllint
 .PHONY: lint-fix
 lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 	$(GOLANGCI_LINT) run --fix
+
+.PHONY: doc-chart
+doc-chart: helm-docs helm
+	$(HELM_DOCS) charts/
 
 ##@ Build
 
@@ -89,6 +113,7 @@ $(LOCALBIN):
 
 ## Tool Binaries
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint-$(GOLANGCI_LINT_VERSION)
+HELM ?= $(LOCALBIN)/helm
 HELM_URL ?= https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 HELM_DOCS ?= $(LOCALBIN)/helm-docs-$(HELM_DOCS_VERSION)
 
@@ -102,10 +127,11 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint,${GOLANGCI_LINT_VERSION})
 
 .PHONY: helm
-helm: ## Install helm on the local machine
+helm: $(HELM) ## Install helm on the local machine
+$(HELM): $(LOCALBIN)
 	wget -O $(LOCALBIN)/get-helm.sh $(HELM_URL)
 	chmod 700 $(LOCALBIN)/get-helm.sh
-	$(LOCALBIN)/get-helm.sh
+	HELM_INSTALL_DIR=$(LOCALBIN) $(LOCALBIN)/get-helm.sh
 
 .PHONY: helm-docs
 helm-docs: $(HELM_DOCS)
@@ -126,7 +152,6 @@ helm-plugins: ## Install helm plugins on the local machine
 	@if ! helm plugin list | grep -q 'secrets'; then \
 		helm plugin install https://github.com/jkroepke/helm-secrets; \
 	fi
-
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary (ideally with version)
