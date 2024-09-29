@@ -1,8 +1,10 @@
 package util
 
 import (
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"os"
 )
 
@@ -22,4 +24,14 @@ func CheckRequiredVariables(requiredVariables []string) []string {
 func EncodeResource(username string, clientSecret string) string {
 	authHeaderString := fmt.Sprintf("%s:%s", username, clientSecret)
 	return base64.StdEncoding.EncodeToString([]byte(authHeaderString))
+}
+
+// GetTransportSettings disables certificate validation for http requests if the insecure env variable has been set.
+func GetTransportSettings() *http.Transport {
+	variableName := "INSECURE_SKIP_TLS_VERIFY"
+	if value, exists := os.LookupEnv(variableName); exists && value == "true" {
+		return &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+	}
+
+	return &http.Transport{}
 }
