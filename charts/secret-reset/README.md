@@ -19,6 +19,7 @@ A Helm chart for secret-reset.
 | config.env.AUTH_CLIENT_SECRET | string | `"secretive"` | The auth client secret. |
 | config.env.AUTH_URL | string | `"https://127.0.0.1:8080"` | The auth service URL. |
 | config.env.AUTH_USERNAME | string | `"dana"` | The auth username. |
+| config.env.INSECURE_SKIP_TLS_VERIFY | bool | `false` | Optionally disable tls verification |
 | config.env.SECRET_NAME | string | `"top-secret"` | The name of the secret to create or update. |
 | config.env.SECRET_NAMESPACE | string | `"top-secret-ns"` | The namespace of the secret to create or update. |
 | fullnameOverride | string | `""` |  |

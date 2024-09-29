@@ -7,6 +7,7 @@ import (
 
 	"github.com/dana-team/secretreset/internal/clients"
 	"github.com/dana-team/secretreset/internal/token"
+	"github.com/dana-team/secretreset/internal/util"
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
 	"go.uber.org/zap"
@@ -33,7 +34,7 @@ func main() {
 	tokenManager := token.Manager{
 		Logger:     logger,
 		K8sClient:  k8sClient,
-		HTTPClient: &http.Client{},
+		HTTPClient: &http.Client{Transport: util.GetTransportSettings()},
 	}
 
 	err = tokenManager.CreateOrUpdate()

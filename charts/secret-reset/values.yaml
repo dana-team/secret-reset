@@ -64,3 +64,5 @@ config:
     SECRET_NAME: top-secret
     # -- The namespace of the secret to create or update.
     SECRET_NAMESPACE: top-secret-ns
+    # -- Optionally disable tls verification
+    INSECURE_SKIP_TLS_VERIFY: false
