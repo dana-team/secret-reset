@@ -28,9 +28,6 @@ jobs:
       - name: Build and push image
         run: make docker-build docker-push IMG=${{ env.REGISTRY }}/${{ env.REPOSITORY_NAME }}:${GITHUB_REF##*/}
 
-      - name: Create install.yaml file
-        run: make build-installer IMG=${{ env.REGISTRY }}/${{ env.REPOSITORY_NAME }}:${GITHUB_REF##*/}
-
   helm-chart:
     runs-on: ubuntu-latest
     permissions:
