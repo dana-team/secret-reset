@@ -31,11 +31,6 @@ jobs:
       - name: Create install.yaml file
         run: make build-installer IMG=${{ env.REGISTRY }}/${{ env.REPOSITORY_NAME }}:${GITHUB_REF##*/}
 
-      - name: Upload install.yaml file
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/install.yaml
-
   helm-chart:
     runs-on: ubuntu-latest
     permissions:
