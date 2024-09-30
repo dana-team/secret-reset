@@ -14,20 +14,20 @@ import (
 )
 
 const (
-	FailedLogger = "failed to initialize logger"
-	FailedClient = "Failed initializing client."
-	FailedToken  = "Failed to get token"
+	errInitializingLogger  = "failed initializing logger"
+	errInitializingClient  = "failed initializing client"
+	errCreateOrUpdateToken = "failed creating or updating token"
 )
 
 func main() {
 	logger, err := initializeLogger()
 	if err != nil {
-		panic(fmt.Errorf("%s: %v", FailedLogger, err))
+		panic(fmt.Errorf("%s: %v", errInitializingLogger, err))
 	}
 
 	k8sClient, err := clients.Initialize(logger)
 	if err != nil {
-		logger.Error(err, "%s", FailedClient)
+		logger.Error(err, errInitializingClient)
 		os.Exit(1)
 	}
 
@@ -39,7 +39,7 @@ func main() {
 
 	err = tokenManager.CreateOrUpdate()
 	if err != nil {
-		tokenManager.Logger.Error(err, "%s", FailedToken)
+		logger.Error(err, errCreateOrUpdateToken)
 		os.Exit(1)
 	}
 

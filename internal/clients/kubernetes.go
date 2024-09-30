@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	errGettingConfig = "Unable to get the config"
-	errGettingClient = "Unable to create a new client"
+	errGettingConfig = "unable to get the config"
+	errGettingClient = "unable to create a new client"
 )
 
 // Initialize initializes a new client.

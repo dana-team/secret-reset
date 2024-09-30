@@ -1,6 +1,7 @@
 package clients
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,11 +11,14 @@ import (
 
 const (
 	httpBasicAuthKey     = "Basic"
-	errCreatingRequest   = "Failed creating request of method"
 	httpAuthorizationKey = "Authorization"
-	errDoingRequest      = "Failed making the request"
-	errClosingBody       = "Failed to close body"
-	errReadingRequest    = "Error in reading the request"
+)
+
+const (
+	errCreatingRequest = "failed creating request of method"
+	errDoingRequest    = "failed making request"
+	errClosingBody     = "failed closing body"
+	errReadingRequest  = "failed reading request"
 )
 
 // SendRequest creates a http request and returns the response body.
@@ -23,15 +27,13 @@ func SendRequest(url string, authHeader string, logger logr.Logger, httpClient *
 
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
-		logger.Error(err, "%s", errCreatingRequest, http.MethodPost, err)
 		return nil, fmt.Errorf("%s %q: %w", errCreatingRequest, http.MethodPost, err)
 	}
 	req.Header.Set(httpAuthorizationKey, httpBasicAuthPrefix)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		logger.Error(err, errDoingRequest)
-		return nil, fmt.Errorf("%s", errDoingRequest)
+		return nil, errors.New(errDoingRequest)
 	}
 
 	defer func(Body io.ReadCloser) {
@@ -44,8 +46,7 @@ func SendRequest(url string, authHeader string, logger logr.Logger, httpClient *
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		logger.Error(err, errReadingRequest)
-		return nil, fmt.Errorf("%s", errReadingRequest)
+		return nil, errors.New(errReadingRequest)
 	}
 	return body, nil
 }

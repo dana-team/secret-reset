@@ -22,15 +22,13 @@ import (
 )
 
 const (
-	errParsing            = "Failed to parse JSON"
-	errNotSet             = "Error: Please set"
-	errUpdating           = "Failed to update resource"
-	errCreating           = "Failed to create a new resource"
-	errCreatingSecret     = "Failed to create a new resource"
-	errUpdatingSecret     = "Failed to update secret"
-	errGettingResource    = "Failed getting the resource"
-	errSendingHTTPRequest = "Failed sending the http request"
-	errExtractingToken    = "Failed to extract token"
+	errParsingJSON        = "failed parsing JSON"
+	errNotSet             = "please set env variables"
+	errCreatingSecret     = "failed creating a new resource"
+	errUpdatingSecret     = "failed to update secret"
+	errGettingSecret      = "failed getting secret"
+	errSendingHTTPRequest = "failed sending HTTP request"
+	errExtractingToken    = "failed to extract token"
 )
 
 const (
@@ -53,8 +51,7 @@ type Manager struct {
 func (t *Manager) extractAccessToken(body []byte) (string, error) {
 	var token AccessToken
 	if err := json.Unmarshal(body, &token); err != nil {
-		t.Logger.Error(err, errParsing)
-		return "", fmt.Errorf("%s: %w", errParsing, err)
+		return "", fmt.Errorf("%s: %w", errParsingJSON, err)
 	}
 	return token.Token, nil
 }
@@ -64,7 +61,6 @@ func (t *Manager) updateSecret(accessToken string, secret *corev1.Secret, secret
 	t.Logger.Info(fmt.Sprintf("Secret %q exists in namespace %q", secretName, secretNamespace))
 
 	encodedToken := base64.StdEncoding.EncodeToString([]byte(accessToken))
-
 	if secret.Data == nil {
 		secret.Data = make(map[string][]byte)
 	}
@@ -79,7 +75,7 @@ func (t *Manager) updateSecret(accessToken string, secret *corev1.Secret, secret
 	return nil
 }
 
-// prepareSecret creates a new corev1 secret.
+// prepareSecret returns a new secret.
 func prepareSecret(secretName string, secretNamespace string, accessToken string) *corev1.Secret {
 	newSecret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -129,7 +125,6 @@ func (t *Manager) CreateOrUpdate() error {
 	requiredVariables := []string{authUsername, authClientSecret, authUrl, secretName, secretNamespace}
 	missingVariables := util.CheckRequiredVariables(requiredVariables)
 	if len(missingVariables) > 0 {
-		t.Logger.Error(nil, "%s %q", errNotSet, strings.Join(missingVariables, ","))
 		return fmt.Errorf("%s %s", errNotSet, strings.Join(missingVariables, ","))
 	}
 
@@ -150,17 +145,14 @@ func (t *Manager) CreateOrUpdate() error {
 	secret := &corev1.Secret{}
 	if err = t.K8sClient.Get(context.TODO(), types.NamespacedName{Name: secretParams[secretName], Namespace: secretParams[secretNamespace]}, secret); err == nil {
 		if err = t.updateSecret(accessToken, secret, secretParams[secretName], secretParams[secretNamespace]); err != nil {
-			t.Logger.Error(err, errUpdating)
-			return fmt.Errorf("%s: %w", errUpdating, err)
+			return err
 		}
 	} else if apierrors.IsNotFound(err) {
 		if err = t.createSecret(secretParams[secretName], secretParams[secretNamespace], accessToken); err != nil {
-			t.Logger.Error(err, errCreating)
-			return fmt.Errorf("%s: %w", errCreating, err)
+			return err
 		}
 	} else {
-		t.Logger.Error(err, errGettingResource)
-		return fmt.Errorf("%s: %w", errGettingResource, err)
+		return fmt.Errorf("%s: %w", errGettingSecret, err)
 	}
 	return nil
 }
