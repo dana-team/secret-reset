@@ -2,7 +2,6 @@ package token
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -60,12 +59,11 @@ func (t *Manager) extractAccessToken(body []byte) (string, error) {
 func (t *Manager) updateSecret(accessToken string, secret *corev1.Secret, secretName string, secretNamespace string) error {
 	t.Logger.Info(fmt.Sprintf("Secret %q exists in namespace %q", secretName, secretNamespace))
 
-	encodedToken := base64.StdEncoding.EncodeToString([]byte(accessToken))
 	if secret.Data == nil {
 		secret.Data = make(map[string][]byte)
 	}
 
-	secret.Data[token] = []byte(encodedToken)
+	secret.Data[token] = []byte(accessToken)
 
 	if err := clients.UpdateResource(t.K8sClient, secret); err != nil {
 		return fmt.Errorf("%s: %w", errUpdatingSecret, err)
